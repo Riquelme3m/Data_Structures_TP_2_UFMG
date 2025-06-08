@@ -2,64 +2,72 @@
 #define PACOTE_HPP
 
 #include <string>
-#include "linked_list.hpp" 
+#include "lista_duplamente_encadeada.hpp"
 
-
-enum class EstadoPacote {
-    NAO_POSTADO,                      
-    CHEGADA_ESCALONADA_ARMAZEM,       
-    CHEGOU_ARMAZEM_NAO_ARMAZENADO,    
-    ARMAZENADO_EM_ARMAZEM,            
-    ALOCADO_PARA_TRANSPORTE,          
-    ENTREGUE                          
+enum EstadoDoPacote{
+    NAO_FOI_POSTADO,
+    CHEGADA_ESCALONADA_EM_UM_ARMAZEM,
+    CHEGOU_MAS_NAO_FOI_ARMAZENADO,
+    ARMAZENADO_EM_UM_ARMAZEM,
+    ALOCADO_PARA_TRANSPORTE,
+    ENTREGUE
 };
 
 
-class Pacote {
+class Pacote{
 
+    private:
 
-private:
-    static int proximo_id_disponivel_; 
+        static int proximo_id;
 
-    int id_;//Id único para cada pacote;
-    
+        int id;
+        EstadoDoPacote estado;
+        DoublyLinkedList<std::string>* rota;
+        double dataHoraPostagem;
+        std::string remetente;
+        std::string destinatário;
+        std::string tipo;
+        std::string armazemOrigem;
+        std::string armazemDestino;
 
-    /*Dados coletados na entrada*/
-
-    std::string data_hora_postagem; 
-    std::string remetente;
-    std::string destinatario;
-    std::string tipo;
-    std::string armazem_origem;
-    std::string armazem_destino;
-    
-    /*-------------------------- */
-
-
-    /*Rota do pacote*/
-    //Implement doubly linked list to represent the routes
-
-    /*-------------- */
-
-
-
-    /*Saída para cada pacote*/
-    double tempo_esperado_estadia;
-    double tempo_armazenado;
-    double tempo_transito;
-    /*----------------------*/
+        double tempoEsperaDeEstadia;
+        double tempoArmazenado;
+        double tempoEmTransito;
+        double tempoUltimaMudancaDeEstado;
 
 
 
 
-    
+    public:
 
+        Pacote(double _dataHoraPostagem,
+        const std::string& remetente,
+        const std::string& destinatario,
+        const std::string& tipo,
+        const std::string& armazemOrigem,
+        const std::string& armazemDestino);
 
+        ~Pacote();
+        
+        //Getters
 
-public:
+        int getId()const;
+        EstadoDoPacote getEstado()const;
+        double getTempoEsperaDeEstadia();
+        double getTempoArmazenado();
+        double getTempoEmTransito();
+        double getUltimaMudancaDeEstado();
+        std::string getProximoArmazem()const;
+        DoublyLinkedList<std::string>* getRotaDoPacote();
+
+        //Setters
+
+        void setEstado(EstadoDoPacote novoEstado,double tempoEvento);
+        void setRota(DoublyLinkedList<std::string>* rotaDoPacote);
+
 
 
 };
-   
 
-#endif // PACOTE_HPP
+
+#endif
