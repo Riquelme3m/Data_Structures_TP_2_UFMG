@@ -80,6 +80,9 @@ class DoublyLinkedList{
         }
         std::cout << std::endl;
     }
+    Node<T>* getHead(){
+        return this->head;
+    }
 };
 
 

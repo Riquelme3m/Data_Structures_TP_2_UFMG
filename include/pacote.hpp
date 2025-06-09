@@ -2,50 +2,48 @@
 #define PACOTE_HPP
 
 #include <string>
+#include "vector.hpp"
+#include "map.hpp"
 #include "lista_duplamente_encadeada.hpp"
 
 enum EstadoDoPacote{
     NAO_FOI_POSTADO,
-    CHEGADA_ESCALONADA_EM_UM_ARMAZEM,
-    CHEGOU_MAS_NAO_FOI_ARMAZENADO,
-    ARMAZENADO_EM_UM_ARMAZEM,
-    ALOCADO_PARA_TRANSPORTE,
+    CHEGADA_ESCALONADA_A_UM_ARMAZEM,
+    ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO,
+    REMOVIDO_DA_SECAO_PARA_TRANSPORTE,
     ENTREGUE
 };
+ 
+
 
 
 class Pacote{
 
     private:
 
-        static int proximo_id;
 
         int id;
         EstadoDoPacote estado;
-        DoublyLinkedList<std::string>* rota;
-        double dataHoraPostagem;
-        std::string remetente;
-        std::string destinatário;
-        std::string tipo;
-        std::string armazemOrigem;
-        std::string armazemDestino;
-
-        double tempoEsperaDeEstadia;
+        DoublyLinkedList<int>* rota;
+        double tempoChegada;
+        int destinatario;
+        int origem;
         double tempoArmazenado;
         double tempoEmTransito;
-        double tempoUltimaMudancaDeEstado;
+        double tempoUltimoEvento;
+        Node<int>* currentNode;
+
+        Vector<Map<double,EstadoDoPacote>>historicoEstados;
 
 
 
 
     public:
-
-        Pacote(double _dataHoraPostagem,
-        const std::string& remetente,
-        const std::string& destinatario,
-        const std::string& tipo,
-        const std::string& armazemOrigem,
-        const std::string& armazemDestino);
+        Pacote() :
+            id(-1), estado(NAO_FOI_POSTADO), rota(nullptr), tempoChegada(0),
+            destinatario(-1), origem(-1), tempoArmazenado(0), tempoEmTransito(0),
+            tempoUltimoEvento(0), currentNode(nullptr), historicoEstados() {}
+        Pacote(double tempoChegada,int id,int origem,int destinatario);
 
         ~Pacote();
         
@@ -53,17 +51,22 @@ class Pacote{
 
         int getId()const;
         EstadoDoPacote getEstado()const;
-        double getTempoEsperaDeEstadia();
-        double getTempoArmazenado();
-        double getTempoEmTransito();
-        double getUltimaMudancaDeEstado();
-        std::string getProximoArmazem()const;
-        DoublyLinkedList<std::string>* getRotaDoPacote();
+        double getTempoArmazenado()const;
+        double getTempoEmTransito()const;
+        double getTempoUltimoEvento()const;
+        double getTempoChegada() const;
+        int getOrigem()const;
+        int getDestinatario()const;
+        int getProximoArmazem()const;
+        const Vector<Map<double,EstadoDoPacote>>& getHistoricosEstados()const;
+        DoublyLinkedList<int>* getRotaDoPacote()const;
 
         //Setters
 
         void setEstado(EstadoDoPacote novoEstado,double tempoEvento);
-        void setRota(DoublyLinkedList<std::string>* rotaDoPacote);
+        void setRota(DoublyLinkedList<int>* rotaDoPacote);
+        void setCurrentNode();
+        void avancarParaProximoArmazem();
 
 
 
