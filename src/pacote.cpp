@@ -99,8 +99,3 @@ void Pacote::avancarParaProximoArmazem(){
         currentNode = currentNode->next;
     }
 }
-
-
-
-
-

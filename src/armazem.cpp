@@ -5,22 +5,27 @@
 Armazem::Armazem(int idArmazen):idArmazem(idArmazem){
 
 }
+Armazem::~Armazem(){
+    for(int i=0;i<secoes.size();i++){
+        delete secoes[i];
+    }
+}
 
 void Armazem::adicionarSecao(int id){
     if(encontrarSecao(id)==-1){
-        Secao novaSecao;
-        novaSecao.idSecao=id;
+        Secao* novaSecao = new Secao;
+        novaSecao->idSecao=id;
         secoes.push_back(novaSecao);
     }
 }
 int Armazem::encontrarSecao(int id){
     for(int i=0;i<secoes.size();i++){
-        if(secoes[i].idSecao == id){
+        if(secoes[i]->idSecao == id){
             return i;
         }
     }
     return -1;
 }
-const Vector<Secao>& Armazem::getSecoes() const {
+const Vector<Secao*>& Armazem::getSecoes() const {
     return this->secoes;
 }
