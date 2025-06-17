@@ -6,6 +6,7 @@
 #include"vector.hpp"
 #include "queue.hpp"
 #include "lerEntrada.hpp"
+#include "escalonador.hpp"
 
 // Helper function to perform BFS using adjacency list and return path as DoublyLinkedList<int>*
 DoublyLinkedList<int>* bfs_rota(const Vector<Vector<int>>& adjList, int origem, int destino) {
@@ -163,6 +164,16 @@ int main(){
         }
         std::cout<<"---------------------------------------"<<std::endl;
     }
+
+    DoublyLinkedList<int>* teste = pacotes[4]->getRotaDoPacote();
+    teste->printForward();
+
+    
+
+    // Inicializa e executa o escalonador
+    Escalonador escalonador;
+    escalonador.inicializar(capacidadeTransporte, latenciaTransporte, intervaloTransporte, custoRemocao, &armazens, &pacotes);
+    escalonador.executarSimulacao();
 
     // Correctly delete Armazem objects
     for(int i=0; i < armazens.size(); i++){
