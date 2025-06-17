@@ -31,7 +31,7 @@ class Pacote{
         double tempoArmazenado;
         double tempoEmTransito;
         double tempoUltimoEvento;
-        Node<int>* currentNode;
+        
 
         Vector<Map<double,EstadoDoPacote>>historicoEstados;
 
@@ -39,10 +39,8 @@ class Pacote{
 
 
     public:
-        Pacote() :
-            id(-1), estado(NAO_FOI_POSTADO), rota(nullptr), tempoChegada(0),
-            destinatario(-1), origem(-1), tempoArmazenado(0), tempoEmTransito(0),
-            tempoUltimoEvento(0), currentNode(nullptr), historicoEstados() {}
+        Node<int>* currentNode;
+        Pacote(){}
         Pacote(double tempoChegada,int id,int origem,int destinatario);
 
         ~Pacote();

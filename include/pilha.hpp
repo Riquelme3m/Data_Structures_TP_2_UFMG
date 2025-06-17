@@ -15,6 +15,8 @@ private:
     int numberOfElements;
 
 public:
+
+
     Stack(): top(nullptr), numberOfElements(0) {}
 
     ~Stack() {

@@ -10,7 +10,7 @@ private:
     void resize(int newCapacity) {
         T* newData = new T[newCapacity];
         for (int i = 0; i < length; ++i)
-            newData[i] = data[i];
+            newData[i] = data[i]; // Consider if T needs deep copy too
         delete[] data;
         data = newData;
         capacity = newCapacity;
@@ -30,6 +30,41 @@ public:
         }
     }
 
+    // Copy Constructor
+    Vector(const Vector& other) : data(nullptr), capacity(0), length(0) {
+        if (other.length > 0) {
+            data = new T[other.capacity]; // Allocate memory
+            capacity = other.capacity;
+            length = other.length;
+            for (int i = 0; i < length; ++i) {
+                data[i] = other.data[i]; // Copy elements
+            }
+        }
+    }
+
+    // Copy Assignment Operator
+    Vector& operator=(const Vector& other) {
+        if (this == &other) { // Self-assignment check
+            return *this;
+        }
+
+        delete[] data; // Free existing resource
+
+        data = nullptr;
+        capacity = 0;
+        length = 0;
+
+        if (other.length > 0) {
+            data = new T[other.capacity]; // Allocate memory
+            capacity = other.capacity;
+            length = other.length;
+            for (int i = 0; i < length; ++i) {
+                data[i] = other.data[i]; // Copy elements
+            }
+        }
+        return *this;
+    }
+
     ~Vector() {
         delete[] data;
     }
@@ -40,6 +75,12 @@ public:
             resize(newCapacity);
         }
         data[length++] = value;
+    }
+
+    void pop_back() {
+        if (length > 0) {
+            length--;
+        }
     }
 
     T& operator[](int idx) {

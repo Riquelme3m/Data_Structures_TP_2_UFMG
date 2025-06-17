@@ -9,33 +9,26 @@
 
 struct Secao {
     int idSecao;   
-    Stack<Pacote*> pilha;   
-};
+    Stack<Pacote*> pilha;
+    
+};  
+
 
 class Armazem {
     private:
         int idArmazem;   
-        Vector<Secao> secoes;   
-        int numSecoes = 0;       
+        Vector<Secao*> secoes;   
+        
     public:
-        Armazem() : idArmazem(-1) {} // Default constructor
+        Armazem(){}
         Armazem(int id);
-        void adicionarSecao(int idSecao);
-        int encontrarSecao(int idSecao);
-        const Vector<Secao>& getSecoes() const;
+        ~Armazem();
+        void adicionarSecao(int idSecaoDestino); // Renamed for clarity
+        int encontrarIndiceSecao(int idSecaoDestino); // Renamed for clarity
+        Secao* getSecaoPorDestino(int idSecaoDestino);
+        const Vector<Secao*>& getSecoes() const;
+        int getId() const { return idArmazem; } // Added getter for ID
         
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
