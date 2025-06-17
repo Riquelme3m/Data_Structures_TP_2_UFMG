@@ -56,11 +56,11 @@ struct Evento {
     }
 
     bool operator<(const Evento& outro) const {
-        return chave > outro.chave; // Para minheap
+        return chave < outro.chave; // Para minheap: menor chave tem maior prioridade
     }
 
     bool operator>(const Evento& outro) const {
-        return chave < outro.chave;
+        return chave > outro.chave;
     }
 
     std::string chaveFormatada() const {

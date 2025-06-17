@@ -64,6 +64,16 @@ public:
         return values[length - 1];
     }
 
+    // Add method to access value by index
+    const Value& operator[](int index) const {
+        if (index >= 0 && index < length) {
+            return values[index];
+        }
+        // Return default if out of bounds (unsafe but consistent with existing pattern)
+        static Value defaultValue;
+        return defaultValue;
+    }
+
     int size() const {
         return length;
     }
