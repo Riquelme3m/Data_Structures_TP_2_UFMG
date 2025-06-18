@@ -19,7 +19,9 @@ tempoArmazenado(0),
 tempoEmTransito(0),
 tempoUltimoEvento(0),
 currentNode(nullptr),
-historicoEstados(){
+historicoEstados(),
+foiRemovidoParaRearmazenamento(false) // Inicializar novo campo
+{
 
 };
 
@@ -98,4 +100,11 @@ void Pacote::avancarParaProximoArmazem(){
     if(currentNode && currentNode->next){
         currentNode = currentNode->next;
     }
+}
+void Pacote::setRearmazenamento(bool rearmazenar) {
+    foiRemovidoParaRearmazenamento = rearmazenar;
+}
+
+bool Pacote::isRearmazenamento() const {
+    return foiRemovidoParaRearmazenamento;
 }

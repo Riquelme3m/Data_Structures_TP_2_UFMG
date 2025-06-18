@@ -56,7 +56,20 @@ Evento Escalonador::retiraProximoEvento() {
 }
 
 bool Escalonador::eventosPendentes() const {
-    return !filaEventos.isEmpty();
+    // Primeiro verifica se há eventos na fila
+    if (filaEventos.isEmpty()) {
+        return false;
+    }
+    
+    // Verifica se todos os pacotes foram entregues
+    for (int i = 0; i < pacotes->size(); ++i) {
+        if ((*pacotes)[i]->getEstado() != ENTREGUE) {
+            return true; // Ainda há pacotes não entregues
+        }
+    }
+    
+    // Todos os pacotes foram entregues, encerrar simulação
+    return false;
 }
 
 void Escalonador::executarSimulacao() {
@@ -75,7 +88,7 @@ void Escalonador::executarSimulacao() {
             if (p) {
                 if (evento.armazemOrigem == p->getDestinatario()) {
                     p->setEstado(ENTREGUE, relogio);
-                    std::cout << std::setw(7) << std::setfill('0') << (int)p->getTempoChegada()
+                    std::cout << std::setw(7) << std::setfill('0') << (int)relogio  // MUDANÇA: usar relogio em vez de p->getTempoChegada()
                         << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
                         << " entregue em " << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                         << std::endl;
@@ -86,19 +99,12 @@ void Escalonador::executarSimulacao() {
                     if (secao) {
                         secao->pilha.push(p);
                         p->setEstado(ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO, relogio);
-                        // Corrigido: contar quantas vezes o pacote foi armazenado
-                        const Vector<Map<double,EstadoDoPacote>>& hist = p->getHistoricosEstados();
-                        int countArmazenado = 0;
-                        for (int i = 0; i < hist.size(); ++i) {
-                            const Map<double,EstadoDoPacote>& m = hist[i];
-                            for (int j = 0; j < m.size(); ++j) {
-                                if (m[j] == ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO)
-                                    countArmazenado++;
-                            }
-                        }
-                        std::cout << std::setw(7) << std::setfill('0') << (int)p->getTempoChegada()
+                        
+                        // CORREÇÃO: Pacotes chegando de transporte sempre são "armazenados"
+                        // (primeira vez no novo armazém)
+                        std::cout << std::setw(7) << std::setfill('0') << (int)relogio
                             << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
-                            << (countArmazenado > 1 ? " rearmazenado em " : " armazenado em ")
+                            << " armazenado em " // Sempre "armazenado" quando chega de transporte
                             << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                             << " na secao " << std::setw(3) << std::setfill('0') << prox
                             << std::endl;
@@ -162,31 +168,20 @@ void Escalonador::executarSimulacao() {
             // 3. Rearmazenar o restante (no tempoTransito, print após trânsito)
             for (int i = 0; i < removidosParaRearmazenar; ++i) {
                 Pacote* p = removidos[i];
-                double tRem = tempoTransito; // Rearmazenamento ocorre no mesmo tempo do trânsito
+                double tRem = tempoTransito;
                 p->setEstado(ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO, tRem);
                 secao->pilha.push(p);
 
-                // Contar quantas vezes já foi armazenado
-                const Vector<Map<double,EstadoDoPacote>>& hist = p->getHistoricosEstados();
-                int countArmazenado = 0;
-                for (int h = 0; h < hist.size(); ++h) {
-                    const Map<double,EstadoDoPacote>& m = hist[h];
-                    for (int j = 0; j < m.size(); ++j) {
-                        if (m[j] == ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO)
-                            countArmazenado++;
-                    }
-                }
                 std::cout << std::setw(7) << std::setfill('0') << (int)tRem
                     << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
-                    << (countArmazenado > 1 ? " rearmazenado em " : " armazenado em ")
+                    << " rearmazenado em " // Sempre "rearmazenado" aqui (mesma pilha)
                     << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                     << " na secao " << std::setw(3) << std::setfill('0') << evento.armazemDestino
                     << std::endl;
             }
 
-            // Agendar próximo transporte: deve ser após a última remoção
-            double tempoUltimaRemocao = temposRemocao.size() == 0 ? relogio : temposRemocao[temposRemocao.size() - 1];
-            Evento proxTransporte(tempoUltimaRemocao + intervaloTransporte, EVENTO_TRANSPORTE, 0, evento.armazemOrigem, evento.armazemDestino);
+            // Agendar próximo transporte: deve ser baseado no tempo de chegada do transporte atual
+            Evento proxTransporte(relogio + intervaloTransporte, EVENTO_TRANSPORTE, 0, evento.armazemOrigem, evento.armazemDestino);
             insereEvento(proxTransporte);
         }
     }
@@ -194,5 +189,4 @@ void Escalonador::executarSimulacao() {
 }
 
 void Escalonador::finaliza() {
-    std::cout << "Simulação finalizada." << std::endl;
 }
