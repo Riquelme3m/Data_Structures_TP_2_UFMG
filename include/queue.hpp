@@ -1,5 +1,6 @@
 #pragma once
 
+// Nó da fila - estrutura auxiliar
 template<typename T>
 struct QueueNode {
     T data;
@@ -7,38 +8,42 @@ struct QueueNode {
     QueueNode(const T& d) : data(d), next(nullptr) {}
 };
 
+// Implementação de fila usando lista ligada (FIFO - First In, First Out)
 template<typename T>
 class Queue {
 private:
-    QueueNode<T>* frontNode;
-    QueueNode<T>* rearNode;
-    int count;
+    QueueNode<T>* frontNode; // Ponteiro para o primeiro elemento
+    QueueNode<T>* rearNode;  // Ponteiro para o último elemento
+    int count;               // Contador de elementos
 
 public:
     Queue() : frontNode(nullptr), rearNode(nullptr), count(0) {}
 
+    // Destrutor - remove todos os elementos
     ~Queue() {
         while (!isEmpty()) {
             dequeue();
         }
     }
 
+    // Adiciona elemento no final da fila
     void enqueue(const T& value) {
         QueueNode<T>* node = new QueueNode<T>(value);
         if (rearNode) {
             rearNode->next = node;
         } else {
-            frontNode = node;
+            frontNode = node; // Primeiro elemento
         }
         rearNode = node;
         count++;
     }
 
+    // Remove elemento do início da fila
     void dequeue() {
         if (isEmpty()) return;
         QueueNode<T>* temp = frontNode;
         frontNode = frontNode->next;
-        if (!frontNode) rearNode = nullptr;
+        if (!frontNode) rearNode = nullptr; // Fila ficou vazia
         delete temp;
         count--;
     }

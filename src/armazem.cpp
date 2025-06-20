@@ -1,10 +1,12 @@
 #include"armazem.hpp"
 #include<iostream>
 
-
+// Construtor do armazém
 Armazem::Armazem(int idArmazen):idArmazem(idArmazen){
 
 }
+
+// Destrutor - libera memória de todas as seções
 Armazem::~Armazem(){
     for(int i=0;i<secoes.size();i++){
         if (secoes[i]) {
@@ -12,37 +14,37 @@ Armazem::~Armazem(){
             secoes[i] = nullptr;
         }
     }
-    secoes.clear(); // Optional: clear the vector after deleting contents
+    secoes.clear();
 }
 
+// Adiciona uma nova seção para um destino específico
 void Armazem::adicionarSecao(int idSecaoDestino){
-    if(encontrarIndiceSecao(idSecaoDestino)==-1){ // Check if section for this destination already exists
+    // Só adiciona se não existir uma seção para este destino
+    if(encontrarIndiceSecao(idSecaoDestino)==-1){
         Secao* novaSecao = new Secao;
-        novaSecao->idSecao = idSecaoDestino; // This secao is FOR packages going TO idSecaoDestino
+        novaSecao->idSecao = idSecaoDestino;
         secoes.push_back(novaSecao);
     }
 }
-// Returns index or -1 if not found
+
+// Encontra o índice de uma seção pelo seu destino
 int Armazem::encontrarIndiceSecao(int idSecaoDestino){
     for(int i=0;i<secoes.size();i++){
         if(secoes[i]->idSecao == idSecaoDestino){
             return i;
         }
     }
-    return -1;
+    return -1; // Retorna -1 se não encontrar
 }
 
+// Retorna ponteiro para seção de um destino específico
 Secao* Armazem::getSecaoPorDestino(int idSecaoDestino) {
     for (int i = 0; i < secoes.size(); ++i) {
         if (secoes[i]->idSecao == idSecaoDestino) {
             return secoes[i];
         }
     }
-    // This case should ideally not happen if graph and sections are set up correctly
-    // Or, a section might need to be dynamically created if it doesn't exist.
-    // For now, returning nullptr. Consider error handling or dynamic creation.
-    // std::cerr << "Alerta: Secao para destino " << idSecaoDestino << " nao encontrada no armazem " << this->idArmazem << std::endl;
-    return nullptr; 
+    return nullptr; // Retorna nullptr se não encontrar
 }
 
 const Vector<Secao*>& Armazem::getSecoes() const {

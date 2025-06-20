@@ -1,0 +1,23 @@
+2,337
+2,337
+3,149
+3,149
+4,69
+5,31
+5,31
+6,15
+7,7
+8,3
+9,1
+10,0
+capacidade transporte,numero rearmazenamentos
+
+int transportcapacity = 10;//capacidade transporte variou de 2 a 10
+  int transportcost = 20;
+  int transportinterval = 100;
+  int retrievecost = 1;
+  int nodes = 10;
+  int numpackets = 100;
+  int conncomp = nodes;
+  long atime=1;
+  long rtime=10;

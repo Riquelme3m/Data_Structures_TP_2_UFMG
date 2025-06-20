@@ -6,29 +6,35 @@
 #include "pacote.hpp"
 #include "vector.hpp"
 
-
+// Seção de um armazém - representa conexão para um destino específico
+// Cada seção tem uma pilha de pacotes aguardando transporte
 struct Secao {
-    int idSecao;   
-    Stack<Pacote*> pilha;
-    
+    int idSecao;           // ID do armazém de destino desta seção
+    Stack<Pacote*> pilha;  // Pilha de pacotes (LIFO - último a entrar, primeiro a sair)
 };  
 
-
+// Armazém - contém múltiplas seções, cada uma para um destino diferente
 class Armazem {
     private:
-        int idArmazem;   
-        Vector<Secao*> secoes;   
+        int idArmazem;           // Identificador único do armazém
+        Vector<Secao*> secoes;   // Vetor de seções (uma por destino conectado)
         
     public:
         Armazem(){}
         Armazem(int id);
         ~Armazem();
-        void adicionarSecao(int idSecaoDestino); // Renamed for clarity
-        int encontrarIndiceSecao(int idSecaoDestino); // Renamed for clarity
-        Secao* getSecaoPorDestino(int idSecaoDestino);
-        const Vector<Secao*>& getSecoes() const;
-        int getId() const { return idArmazem; } // Added getter for ID
         
+        // Adiciona nova seção para um destino
+        void adicionarSecao(int idSecaoDestino);
+        
+        // Encontra índice de seção por destino
+        int encontrarIndiceSecao(int idSecaoDestino);
+        
+        // Retorna ponteiro para seção de um destino específico
+        Secao* getSecaoPorDestino(int idSecaoDestino);
+        
+        const Vector<Secao*>& getSecoes() const;
+        int getId() const { return idArmazem; }
 };
 
 #endif

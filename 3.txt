@@ -1,0 +1,20 @@
+10,3
+100,337
+200,405
+300,432
+400,453
+500,458
+600,458
+700,458
+800,458
+900,458
+1000,458
+
+intervalo de transporte , numero de pacotes rearmazenamentos
+int seed = 1;
+  int transportcapacity = 2;
+  int transportcost = 20;
+  int transportinterval = 1000;// intervalo
+  int retrievecost = 1;
+  int nodes = 10;
+  int numpackets = 100;

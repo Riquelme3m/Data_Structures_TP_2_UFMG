@@ -1,10 +1,13 @@
 #include "escalonador.hpp"
 #include <iostream>
-#include <iomanip>   // Para std::setw e std::setfill
+#include <iomanip>
+
 
 Escalonador::Escalonador() : capacidadeTransporte(0), latenciaTransporte(0), intervaloTransporte(0), custoRemocao(0), armazens(nullptr), pacotes(nullptr), relogio(0) {}
 
+// Inicializa o escalonador com parâmetros e dados
 void Escalonador::inicializar(int cap, int lat, int intervalo, int custo, Vector<Armazem*>* armazens, Vector<Pacote*>* pacotes) {
+    // Armazena parâmetros de configuração
     this->capacidadeTransporte = cap;
     this->latenciaTransporte = lat;
     this->intervaloTransporte = intervalo;
@@ -13,14 +16,15 @@ void Escalonador::inicializar(int cap, int lat, int intervalo, int custo, Vector
     this->pacotes = pacotes;
     this->relogio = 0;
 
-    // Coletar eventos iniciais de chegada de pacotes
+    // Cria eventos de chegada para todos os pacotes
     Vector<Evento> eventosChegada;
     for (int i = 0; i < pacotes->size(); ++i) {
         Pacote* p = (*pacotes)[i];
         Evento e(p->getTempoChegada(), EVENTO_CHEGADA_PACOTE, p->getId(), p->getOrigem(), p->getOrigem());
         eventosChegada.push_back(e);
     }
-    // Ordenar por tempoChegada e, em caso de empate, por id (menor para maior)
+    
+    // Ordena eventos por tempo (e por ID em caso de empate)
     for (int i = 0; i < eventosChegada.size(); ++i) {
         for (int j = i + 1; j < eventosChegada.size(); ++j) {
             if ((eventosChegada[j].tempo < eventosChegada[i].tempo) ||
@@ -31,17 +35,27 @@ void Escalonador::inicializar(int cap, int lat, int intervalo, int custo, Vector
             }
         }
     }
-    // Inserir na fila de eventos na ordem correta
+    
+    // Insere eventos de chegada na fila
     for (int i = 0; i < eventosChegada.size(); ++i) {
         insereEvento(eventosChegada[i]);
     }
 
-    // Agendar eventos iniciais de transporte para cada ligação entre armazéns
+    // Encontra o tempo do primeiro pacote para iniciar transportes
+    double tempoMenorPacote = (*pacotes)[0]->getTempoChegada();
+    for (int i = 1; i < pacotes->size(); ++i) {
+        if ((*pacotes)[i]->getTempoChegada() < tempoMenorPacote) {
+            tempoMenorPacote = (*pacotes)[i]->getTempoChegada();
+        }
+    }
+
+    // Agenda primeiro evento de transporte para cada rota
+    double tempoInicialTransporte = tempoMenorPacote + intervaloTransporte;
     for (int i = 0; i < armazens->size(); ++i) {
         const Vector<Secao*>& secoes = (*armazens)[i]->getSecoes();
         for (int j = 0; j < secoes.size(); ++j) {
             int destino = secoes[j]->idSecao;
-            Evento e(1, EVENTO_TRANSPORTE, 0, i, destino); // Mudança: t=1 em vez de t=0
+            Evento e(tempoInicialTransporte, EVENTO_TRANSPORTE, 0, i, destino);
             insereEvento(e);
         }
     }
@@ -55,29 +69,30 @@ Evento Escalonador::retiraProximoEvento() {
     return filaEventos.extractMin();
 }
 
+// Verifica se ainda há eventos pendentes ou pacotes não entregues
 bool Escalonador::eventosPendentes() const {
-    // Primeiro verifica se há eventos na fila
     if (filaEventos.isEmpty()) {
         return false;
     }
     
-    // Verifica se todos os pacotes foram entregues
+    // Verifica se há pacotes ainda não entregues
     for (int i = 0; i < pacotes->size(); ++i) {
         if ((*pacotes)[i]->getEstado() != ENTREGUE) {
-            return true; // Ainda há pacotes não entregues
+            return true;
         }
     }
     
-    // Todos os pacotes foram entregues, encerrar simulação
     return false;
 }
 
+// Executa a simulação principal
 void Escalonador::executarSimulacao() {
     while (eventosPendentes()) {
         Evento evento = retiraProximoEvento();
         relogio = evento.tempo;
 
         if (evento.tipo == EVENTO_CHEGADA_PACOTE) {
+            // Encontra o pacote correspondente
             Pacote* p = nullptr;
             for (int i = 0; i < pacotes->size(); ++i) {
                 if ((*pacotes)[i]->getId() == evento.pacoteId) {
@@ -86,13 +101,15 @@ void Escalonador::executarSimulacao() {
                 }
             }
             if (p) {
+                // Verifica se chegou ao destino final
                 if (evento.armazemOrigem == p->getDestinatario()) {
                     p->setEstado(ENTREGUE, relogio);
-                    std::cout << std::setw(7) << std::setfill('0') << (int)relogio  // MUDANÇA: usar relogio em vez de p->getTempoChegada()
+                    std::cout << std::setw(7) << std::setfill('0') << (int)relogio
                         << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
                         << " entregue em " << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                         << std::endl;
                 } else {
+                    // Armazena na seção correspondente ao próximo destino
                     int prox = p->getProximoArmazem();
                     Armazem* arm = (*armazens)[evento.armazemOrigem];
                     Secao* secao = arm->getSecaoPorDestino(prox);
@@ -100,11 +117,9 @@ void Escalonador::executarSimulacao() {
                         secao->pilha.push(p);
                         p->setEstado(ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO, relogio);
                         
-                        // CORREÇÃO: Pacotes chegando de transporte sempre são "armazenados"
-                        // (primeira vez no novo armazém)
                         std::cout << std::setw(7) << std::setfill('0') << (int)relogio
                             << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
-                            << " armazenado em " // Sempre "armazenado" quando chega de transporte
+                            << " armazenado em "
                             << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                             << " na secao " << std::setw(3) << std::setfill('0') << prox
                             << std::endl;
@@ -112,10 +127,11 @@ void Escalonador::executarSimulacao() {
                 }
             }
         } else if (evento.tipo == EVENTO_TRANSPORTE) {
+            // Processa evento de transporte
             Armazem* arm = (*armazens)[evento.armazemOrigem];
             Secao* secao = arm->getSecaoPorDestino(evento.armazemDestino);
 
-            // Remover todos os pacotes da pilha (ordem LIFO)
+            // Remove todos os pacotes da seção
             Vector<Pacote*> removidos;
             while (secao && !secao->pilha.isEmpty()) {
                 Pacote* p = secao->pilha.getTop();
@@ -124,17 +140,18 @@ void Escalonador::executarSimulacao() {
             }
 
             int total = removidos.size();
+            // Determina quantos serão transportados vs rearmazenados
             int removidosParaTransporte = (capacidadeTransporte < total) ? capacidadeTransporte : total;
             int removidosParaRearmazenar = total - removidosParaTransporte;
 
+            // Calcula tempos de remoção (cada remoção tem um custo)
             Vector<double> temposRemocao;
-            // CORREÇÃO: O primeiro pacote é removido em relogio + 1*custoRemocao
             for (int i = 0; i < total; ++i) {
                 double tRem = relogio + (i + 1) * custoRemocao;
                 temposRemocao.push_back(tRem);
             }
 
-            // 1. Imprimir todas as remoções (no tempo correto)
+            // Marca todos como removidos primeiro
             for (int i = 0; i < total; ++i) {
                 Pacote* p = removidos[i];
                 double tRem = temposRemocao[i];
@@ -146,16 +163,17 @@ void Escalonador::executarSimulacao() {
                     << std::endl;
             }
 
-            // 2. Imprimir todos os "em transito" e agendar chegada (todos juntos no tempo da última remoção)
             double tempoTransito = temposRemocao.size() == 0 ? relogio : temposRemocao[temposRemocao.size() - 1];
-            // Transporte: últimos removidos (do fundo)
+            
+            // Agenda chegadas dos pacotes transportados
             for (int i = total - removidosParaTransporte; i < total; ++i) {
                 Pacote* p = removidos[i];
-                p->avancarParaProximoArmazem();
+                p->avancarParaProximoArmazem(); // Avança na rota
                 Evento chegada(tempoTransito + latenciaTransporte, EVENTO_CHEGADA_PACOTE, p->getId(), evento.armazemDestino, evento.armazemDestino);
                 insereEvento(chegada);
             }
-            // Print em transito na ordem reversa (último removido primeiro)
+            
+            // Imprime pacotes em trânsito
             for (int i = total - 1; i >= total - removidosParaTransporte; --i) {
                 Pacote* p = removidos[i];
                 std::cout << std::setw(7) << std::setfill('0') << (int)tempoTransito
@@ -165,8 +183,8 @@ void Escalonador::executarSimulacao() {
                     << std::endl;
             }
 
-            // 3. Rearmazenar o restante (no tempoTransito, print após trânsito)
-            for (int i = 0; i < removidosParaRearmazenar; ++i) {
+            // Rearmazena os pacotes que não couberam no transporte
+            for (int i = removidosParaRearmazenar - 1; i >= 0; --i) {
                 Pacote* p = removidos[i];
                 double tRem = tempoTransito;
                 p->setEstado(ARMAZENADO_NA_SECAO_ASSOCIADA_AO_PROXIMO_DESTINO, tRem);
@@ -174,17 +192,19 @@ void Escalonador::executarSimulacao() {
 
                 std::cout << std::setw(7) << std::setfill('0') << (int)tRem
                     << " pacote " << std::setw(3) << std::setfill('0') << p->getId()
-                    << " rearmazenado em " // Sempre "rearmazenado" aqui (mesma pilha)
+                    << " rearmazenado em "
                     << std::setw(3) << std::setfill('0') << evento.armazemOrigem
                     << " na secao " << std::setw(3) << std::setfill('0') << evento.armazemDestino
                     << std::endl;
+                    this->pacotesRearmazenados++;
             }
 
-            // Agendar próximo transporte: deve ser baseado no tempo de chegada do transporte atual
+            // Agenda próximo transporte para esta rota
             Evento proxTransporte(relogio + intervaloTransporte, EVENTO_TRANSPORTE, 0, evento.armazemOrigem, evento.armazemDestino);
             insereEvento(proxTransporte);
         }
     }
+    std::cout<<"Pacotes rearmazenados numero: "<<this->pacotesRearmazenados<<std::endl;
     finaliza();
 }
 

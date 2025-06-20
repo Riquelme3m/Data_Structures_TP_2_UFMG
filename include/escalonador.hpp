@@ -31,6 +31,7 @@ public:
     bool eventosPendentes() const;
     void executarSimulacao();
     void finaliza();
+    int pacotesRearmazenados=0;
 };
 
 #endif

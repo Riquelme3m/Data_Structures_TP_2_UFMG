@@ -1,0 +1,32 @@
+1,197
+2,197
+3,198
+4,198
+5,196
+6,198
+7,203
+8,203
+9,203
+10,203
+11,202
+12,202
+13,204
+14,204
+15,207
+16,208
+20,224
+21,223
+
+latencia,numero de rearmazenamentos
+
+  int seed = 1;
+  int transportcapacity = 2;
+  int transportcost = 21; //
+  int transportinterval = 20;
+  int retrievecost = 1;
+  int nodes = 15;
+  int numpackets = 1000;
+  int conncomp = nodes;
+  long atime=1;
+  long rtime=10;
+  int src, dst, fsrc, fdst;
